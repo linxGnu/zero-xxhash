@@ -1,0 +1,7 @@
+[package]
+name = "zero-xxhash"
+version = "0.1.0"
+authors = ["linxGnu <linhduonggnu@gmail.com>"]
+
+[dev-dependencies]
+twox-hash = "*"
