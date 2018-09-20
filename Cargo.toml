@@ -1,6 +1,6 @@
 [package]
 name = "zero-xxhash"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["linxGnu <linhduonggnu@gmail.com>"]
 
 [dev-dependencies]
