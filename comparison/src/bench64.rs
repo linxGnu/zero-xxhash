@@ -5,16 +5,17 @@ use test;
 use twox_hash::XxHash;
 use zero_xxhash::hash64::xxhash64;
 
-const size_0: usize = 0;
-const size_1: usize = 1;
-const size_4: usize = 4;
-const size_16: usize = 16;
-const size_64: usize = 64;
-const size_128: usize = 128;
-const size_256: usize = 256;
-const size_512: usize = 512;
-const size_1024: usize = 1024;
-const size_mega: usize = 1024 * 1024 * 16; // 16MB
+const degree: usize = 31;
+const size_0: usize = 0 * degree;
+const size_1: usize = 1 * degree;
+const size_4: usize = 4 * degree;
+const size_16: usize = 16 * degree;
+const size_64: usize = 64 * degree;
+const size_128: usize = 128 * degree;
+const size_256: usize = 256 * degree;
+const size_512: usize = 512 * degree;
+const size_1024: usize = 1024 * degree;
+const size_mega: usize = 1024 * 1024 * degree;
 
 fn hasher_bench<H>(b: &mut test::Bencher, mut hasher: H, len: usize)
 where

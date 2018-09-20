@@ -17,13 +17,13 @@ fn read_u64(data: &[u8]) -> u64 {
 }
 
 #[inline(always)]
-fn avalanche64(inp: u64) -> u64 {
-    let mut h64 = inp ^ (inp >> 33);
-    h64 = h64.wrapping_mul(PRIME64_2);
-    h64 ^= h64 >> 29;
-    h64 = h64.wrapping_mul(PRIME64_3);
-    h64 ^= h64 >> 32;
-    h64
+fn avalanche64(mut inp: u64) -> u64 {
+    inp ^= inp >> 33;
+    inp = inp.wrapping_mul(PRIME64_2);
+    inp ^= inp >> 29;
+    inp = inp.wrapping_mul(PRIME64_3);
+    inp ^= inp >> 32;
+    inp
 }
 
 #[inline(always)]
@@ -43,14 +43,13 @@ fn xxh64_merge_round(acc: u64, val: u64) -> u64 {
 pub fn xxhash64(data: &[u8], seed: u64) -> u64 {
     let mut h64: u64;
     let n = data.len();
-    let limit = n - (n & 31);
+    let mut limit = n - (n & 31);
 
+    let mut ptr = data;
     let mut acc1;
     let mut acc2;
     let mut acc3;
     let mut acc4;
-
-    let mut t = 0;
 
     if n >= 32 {
         acc1 = seed.wrapping_add(PRIME64_1).wrapping_add(PRIME64_2);
@@ -58,12 +57,59 @@ pub fn xxhash64(data: &[u8], seed: u64) -> u64 {
         acc3 = seed;
         acc4 = seed.wrapping_sub(PRIME64_1);
 
-        while t < limit {
-            acc1 = xxh64_round(acc1, read_u64(&data[t..]));
-            acc2 = xxh64_round(acc2, read_u64(&data[t + 8..]));
-            acc3 = xxh64_round(acc3, read_u64(&data[t + 16..]));
-            acc4 = xxh64_round(acc4, read_u64(&data[t + 24..]));
-            t += 32;
+        if limit >> 7 > 0 {
+            for _i in 0..limit >> 7 {
+                acc1 = xxh64_round(acc1, read_u64(&ptr));
+                acc2 = xxh64_round(acc2, read_u64(&ptr[8..16]));
+                acc3 = xxh64_round(acc3, read_u64(&ptr[16..24]));
+                acc4 = xxh64_round(acc4, read_u64(&ptr[24..32]));
+
+                acc1 = xxh64_round(acc1, read_u64(&ptr[32..40]));
+                acc2 = xxh64_round(acc2, read_u64(&ptr[40..48]));
+                acc3 = xxh64_round(acc3, read_u64(&ptr[48..56]));
+                acc4 = xxh64_round(acc4, read_u64(&ptr[56..64]));
+
+                acc1 = xxh64_round(acc1, read_u64(&ptr[64..72]));
+                acc2 = xxh64_round(acc2, read_u64(&ptr[72..80]));
+                acc3 = xxh64_round(acc3, read_u64(&ptr[80..88]));
+                acc4 = xxh64_round(acc4, read_u64(&ptr[88..96]));
+
+                acc1 = xxh64_round(acc1, read_u64(&ptr[96..104]));
+                acc2 = xxh64_round(acc2, read_u64(&ptr[104..112]));
+                acc3 = xxh64_round(acc3, read_u64(&ptr[112..120]));
+                acc4 = xxh64_round(acc4, read_u64(&ptr[120..128]));
+
+                ptr = &ptr[128..]
+            }
+            limit = limit & 127
+        }
+
+        if limit >> 6 > 0 {
+            for _i in 0..limit >> 6 {
+                acc1 = xxh64_round(acc1, read_u64(&ptr));
+                acc2 = xxh64_round(acc2, read_u64(&ptr[8..16]));
+                acc3 = xxh64_round(acc3, read_u64(&ptr[16..24]));
+                acc4 = xxh64_round(acc4, read_u64(&ptr[24..32]));
+
+                acc1 = xxh64_round(acc1, read_u64(&ptr[32..40]));
+                acc2 = xxh64_round(acc2, read_u64(&ptr[40..48]));
+                acc3 = xxh64_round(acc3, read_u64(&ptr[48..56]));
+                acc4 = xxh64_round(acc4, read_u64(&ptr[56..64]));
+
+                ptr = &ptr[64..]
+            }
+            limit = limit & 63
+        }
+
+        if limit >> 5 > 0 {
+            for _i in 0..limit >> 5 {
+                acc1 = xxh64_round(acc1, read_u64(&ptr));
+                acc2 = xxh64_round(acc2, read_u64(&ptr[8..16]));
+                acc3 = xxh64_round(acc3, read_u64(&ptr[16..24]));
+                acc4 = xxh64_round(acc4, read_u64(&ptr[24..32]));
+
+                ptr = &ptr[32..];
+            }
         }
 
         h64 = acc1
@@ -80,10 +126,11 @@ pub fn xxhash64(data: &[u8], seed: u64) -> u64 {
         h64 = seed.wrapping_add(PRIME64_5);
     }
 
-    h64 = h64.wrapping_add(data.len() as u64);
+    // add len to hash
+    h64 = h64.wrapping_add(n as u64);
 
     // finalize
-    xxh64_finalize(&data[limit..], h64)
+    xxh64_finalize(&ptr, h64)
 }
 
 fn xxh64_finalize(data: &[u8], mut h64: u64) -> u64 {

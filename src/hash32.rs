@@ -31,14 +31,13 @@ fn xxh32_round(acc: u32, input: u32) -> u32 {
 pub fn xxhash32(data: &[u8], seed: u32) -> u32 {
     let mut h32: u32;
     let n = data.len();
-    let limit = n - (n & 15);
+    let mut limit = n - (n & 15);
 
+    let mut ptr = data;
     let mut acc1;
     let mut acc2;
     let mut acc3;
     let mut acc4;
-
-    let mut t = 0;
 
     if n >= 16 {
         acc1 = seed.wrapping_add(PRIME32_1).wrapping_add(PRIME32_2);
@@ -46,12 +45,59 @@ pub fn xxhash32(data: &[u8], seed: u32) -> u32 {
         acc3 = seed;
         acc4 = seed.wrapping_sub(PRIME32_1);
 
-        while t < limit {
-            acc1 = xxh32_round(acc1, read_u32(&data[t..]));
-            acc2 = xxh32_round(acc2, read_u32(&data[t + 4..]));
-            acc3 = xxh32_round(acc3, read_u32(&data[t + 8..]));
-            acc4 = xxh32_round(acc4, read_u32(&data[t + 12..]));
-            t += 16;
+        if limit >> 6 > 0 {
+            for _i in 0..limit >> 6 {
+                acc1 = xxh32_round(acc1, read_u32(&ptr));
+                acc2 = xxh32_round(acc2, read_u32(&ptr[4..8]));
+                acc3 = xxh32_round(acc3, read_u32(&ptr[8..12]));
+                acc4 = xxh32_round(acc4, read_u32(&ptr[12..16]));
+
+                acc1 = xxh32_round(acc1, read_u32(&ptr[16..20]));
+                acc2 = xxh32_round(acc2, read_u32(&ptr[20..24]));
+                acc3 = xxh32_round(acc3, read_u32(&ptr[24..28]));
+                acc4 = xxh32_round(acc4, read_u32(&ptr[28..32]));
+
+                acc1 = xxh32_round(acc1, read_u32(&ptr[32..36]));
+                acc2 = xxh32_round(acc2, read_u32(&ptr[36..40]));
+                acc3 = xxh32_round(acc3, read_u32(&ptr[40..44]));
+                acc4 = xxh32_round(acc4, read_u32(&ptr[44..48]));
+
+                acc1 = xxh32_round(acc1, read_u32(&ptr[48..52]));
+                acc2 = xxh32_round(acc2, read_u32(&ptr[52..56]));
+                acc3 = xxh32_round(acc3, read_u32(&ptr[56..60]));
+                acc4 = xxh32_round(acc4, read_u32(&ptr[60..64]));
+
+                ptr = &ptr[64..];
+            }
+            limit = limit & 63;
+        }
+
+        if limit >> 5 > 0 {
+            for _i in 0..limit >> 5 {
+                acc1 = xxh32_round(acc1, read_u32(&ptr));
+                acc2 = xxh32_round(acc2, read_u32(&ptr[4..8]));
+                acc3 = xxh32_round(acc3, read_u32(&ptr[8..12]));
+                acc4 = xxh32_round(acc4, read_u32(&ptr[12..16]));
+
+                acc1 = xxh32_round(acc1, read_u32(&ptr[16..20]));
+                acc2 = xxh32_round(acc2, read_u32(&ptr[20..24]));
+                acc3 = xxh32_round(acc3, read_u32(&ptr[24..28]));
+                acc4 = xxh32_round(acc4, read_u32(&ptr[28..32]));
+
+                ptr = &ptr[32..];
+            }
+            limit = limit & 31;
+        }
+
+        if limit >> 4 > 0 {
+            for _i in 0..limit >> 4 {
+                acc1 = xxh32_round(acc1, read_u32(&ptr));
+                acc2 = xxh32_round(acc2, read_u32(&ptr[4..8]));
+                acc3 = xxh32_round(acc3, read_u32(&ptr[8..12]));
+                acc4 = xxh32_round(acc4, read_u32(&ptr[12..16]));
+
+                ptr = &ptr[16..];
+            }
         }
 
         h32 = acc1
@@ -63,10 +109,11 @@ pub fn xxhash32(data: &[u8], seed: u32) -> u32 {
         h32 = seed.wrapping_add(PRIME32_5);
     }
 
+    // add len to hash
     h32 = h32.wrapping_add(n as u32);
 
     // finalize
-    xxh32_finalize(&data[limit..], h32)
+    xxh32_finalize(&ptr, h32)
 }
 
 fn xxh32_finalize(data: &[u8], mut h32: u32) -> u32 {
