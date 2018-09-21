@@ -1,0 +1,16 @@
+[package]
+name = "bencher1"
+version = "0.1.0"
+authors = ["linxGnu <linhduonggnu@gmail.com>"]
+
+[dependencies]
+fnv = "*"
+quickcheck = "*"
+rand = "*"
+twox-hash = "*"
+
+[dependencies.zero-xxhash]
+path = ".."
+
+[features]
+bench = []

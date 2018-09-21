@@ -1,37 +1,4 @@
-# zero-xxhash
-A Rust implementation of the [XXHash], zero allocation and inline hashing.
 
-[![Build Status](https://travis-ci.org/linxGnu/zero-xxhash.svg)](https://travis-ci.org/linxGnu/zero-xxhash)
-
-[XXHash]: https://github.com/Cyan4973/xxHash
-
-## Examples
-
-### xxhash64
-
-```rust
-use zero_xxhash::hash64::xxhash64;
-
-let buf: Vec<_> = (0..100).cycle().take(len).collect();
-let seed = 12345;
-
-xxhash64(&buf, seed)
-```
-
-### xxhash32
-
-```rust
-use zero_xxhash::hash32::xxhash32;
-
-let buf: Vec<_> = (0..100).cycle().take(len).collect();
-let seed = 12345;
-
-xxhash32(&buf, seed)
-```
-
-## Benchmarks
-
-```
 running 60 tests
 test bench32::xxhash32_0_byte      ... bench:           7 ns/iter (+/- 2)
 test bench32::xxhash32_1024_byte   ... bench:         301 ns/iter (+/- 24) = 6803 MB/s
@@ -95,4 +62,4 @@ test bench64::zerohash64_64_byte   ... bench:          18 ns/iter (+/- 0) = 7111
 test bench64::zerohash64_megabyte  ... bench:     138,870 ns/iter (+/- 9,956) = 15101 MB/s
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 60 measured; 0 filtered out
-```
+

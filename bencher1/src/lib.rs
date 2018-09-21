@@ -20,6 +20,3 @@ extern crate quickcheck;
 
 #[cfg(all(feature = "quickcheck", test))]
 extern crate rand;
-
-#[cfg(all(feature = "quickcheck", test))]
-extern crate xxhash2;

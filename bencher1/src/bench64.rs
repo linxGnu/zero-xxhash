@@ -1,11 +1,11 @@
 use std::hash::{Hasher, SipHasher};
+use test;
 
 use fnv;
-use test;
 use twox_hash::XxHash;
 use zero_xxhash::hash64::xxhash64;
 
-const degree: usize = 31;
+const degree: usize = 2;
 const size_0: usize = 0 * degree;
 const size_1: usize = 1 * degree;
 const size_4: usize = 4 * degree;

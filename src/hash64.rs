@@ -1,20 +1,8 @@
-use std::ptr;
-
 const PRIME64_1: u64 = 11400714785074694791;
 const PRIME64_2: u64 = 14029467366897019727;
 const PRIME64_3: u64 = 1609587929392839161;
 const PRIME64_4: u64 = 9650029242287828579;
 const PRIME64_5: u64 = 2870177450012600261;
-
-#[inline(always)]
-fn read_u32(data: &[u8]) -> u32 {
-    unsafe { ptr::read(data.as_ptr() as *const u32) }
-}
-
-#[inline(always)]
-fn read_u64(data: &[u8]) -> u64 {
-    unsafe { ptr::read(data.as_ptr() as *const u64) }
-}
 
 #[inline(always)]
 fn avalanche64(mut inp: u64) -> u64 {
@@ -45,95 +33,107 @@ pub fn xxhash64(data: &[u8], seed: u64) -> u64 {
     let n = data.len();
     let mut limit = n - (n & 31);
 
-    let mut ptr = data;
+    let mut p = data;
     let mut acc1;
     let mut acc2;
     let mut acc3;
     let mut acc4;
 
-    if n >= 32 {
-        acc1 = seed.wrapping_add(PRIME64_1).wrapping_add(PRIME64_2);
-        acc2 = seed.wrapping_add(PRIME64_2);
-        acc3 = seed;
-        acc4 = seed.wrapping_sub(PRIME64_1);
+    unsafe {
+        if n >= 32 {
+            acc1 = seed.wrapping_add(PRIME64_1).wrapping_add(PRIME64_2);
+            acc2 = seed.wrapping_add(PRIME64_2);
+            acc3 = seed;
+            acc4 = seed.wrapping_sub(PRIME64_1);
 
-        if limit >> 7 > 0 {
-            for _i in 0..limit >> 7 {
-                acc1 = xxh64_round(acc1, read_u64(&ptr));
-                acc2 = xxh64_round(acc2, read_u64(&ptr[8..16]));
-                acc3 = xxh64_round(acc3, read_u64(&ptr[16..24]));
-                acc4 = xxh64_round(acc4, read_u64(&ptr[24..32]));
+            if limit >> 7 > 0 {
+                for _i in 0..limit >> 7 {
+                    acc1 = xxh64_round(acc1, *(p.as_ptr() as *const u64));
+                    acc2 = xxh64_round(acc2, *(p[8..].as_ptr() as *const u64));
+                    acc3 = xxh64_round(acc3, *(p[16..].as_ptr() as *const u64));
+                    acc4 = xxh64_round(acc4, *(p[24..].as_ptr() as *const u64));
 
-                acc1 = xxh64_round(acc1, read_u64(&ptr[32..40]));
-                acc2 = xxh64_round(acc2, read_u64(&ptr[40..48]));
-                acc3 = xxh64_round(acc3, read_u64(&ptr[48..56]));
-                acc4 = xxh64_round(acc4, read_u64(&ptr[56..64]));
+                    acc1 = xxh64_round(acc1, *(p[32..].as_ptr() as *const u64));
+                    acc2 = xxh64_round(acc2, *(p[40..].as_ptr() as *const u64));
+                    acc3 = xxh64_round(acc3, *(p[48..].as_ptr() as *const u64));
+                    acc4 = xxh64_round(acc4, *(p[56..].as_ptr() as *const u64));
 
-                acc1 = xxh64_round(acc1, read_u64(&ptr[64..72]));
-                acc2 = xxh64_round(acc2, read_u64(&ptr[72..80]));
-                acc3 = xxh64_round(acc3, read_u64(&ptr[80..88]));
-                acc4 = xxh64_round(acc4, read_u64(&ptr[88..96]));
+                    acc1 = xxh64_round(acc1, *(p[64..].as_ptr() as *const u64));
+                    acc2 = xxh64_round(acc2, *(p[72..].as_ptr() as *const u64));
+                    acc3 = xxh64_round(acc3, *(p[80..].as_ptr() as *const u64));
+                    acc4 = xxh64_round(acc4, *(p[88..].as_ptr() as *const u64));
 
-                acc1 = xxh64_round(acc1, read_u64(&ptr[96..104]));
-                acc2 = xxh64_round(acc2, read_u64(&ptr[104..112]));
-                acc3 = xxh64_round(acc3, read_u64(&ptr[112..120]));
-                acc4 = xxh64_round(acc4, read_u64(&ptr[120..128]));
+                    acc1 = xxh64_round(acc1, *(p[96..].as_ptr() as *const u64));
+                    acc2 = xxh64_round(acc2, *(p[104..].as_ptr() as *const u64));
+                    acc3 = xxh64_round(acc3, *(p[112..].as_ptr() as *const u64));
+                    acc4 = xxh64_round(acc4, *(p[120..].as_ptr() as *const u64));
 
-                ptr = &ptr[128..]
+                    p = &p[128..]
+                }
+                limit = limit & 127
             }
-            limit = limit & 127
-        }
 
-        if limit >> 6 > 0 {
-            for _i in 0..limit >> 6 {
-                acc1 = xxh64_round(acc1, read_u64(&ptr));
-                acc2 = xxh64_round(acc2, read_u64(&ptr[8..16]));
-                acc3 = xxh64_round(acc3, read_u64(&ptr[16..24]));
-                acc4 = xxh64_round(acc4, read_u64(&ptr[24..32]));
+            if limit >> 6 > 0 {
+                for _i in 0..limit >> 6 {
+                    acc1 = xxh64_round(acc1, *(p.as_ptr() as *const u64));
+                    acc2 = xxh64_round(acc2, *(p[8..].as_ptr() as *const u64));
+                    acc3 = xxh64_round(acc3, *(p[16..].as_ptr() as *const u64));
+                    acc4 = xxh64_round(acc4, *(p[24..].as_ptr() as *const u64));
 
-                acc1 = xxh64_round(acc1, read_u64(&ptr[32..40]));
-                acc2 = xxh64_round(acc2, read_u64(&ptr[40..48]));
-                acc3 = xxh64_round(acc3, read_u64(&ptr[48..56]));
-                acc4 = xxh64_round(acc4, read_u64(&ptr[56..64]));
+                    acc1 = xxh64_round(acc1, *(p[32..].as_ptr() as *const u64));
+                    acc2 = xxh64_round(acc2, *(p[40..].as_ptr() as *const u64));
+                    acc3 = xxh64_round(acc3, *(p[48..].as_ptr() as *const u64));
+                    acc4 = xxh64_round(acc4, *(p[56..].as_ptr() as *const u64));
 
-                ptr = &ptr[64..]
+                    p = &p[64..]
+                }
+                limit = limit & 63
             }
-            limit = limit & 63
-        }
 
-        if limit >> 5 > 0 {
-            for _i in 0..limit >> 5 {
-                acc1 = xxh64_round(acc1, read_u64(&ptr));
-                acc2 = xxh64_round(acc2, read_u64(&ptr[8..16]));
-                acc3 = xxh64_round(acc3, read_u64(&ptr[16..24]));
-                acc4 = xxh64_round(acc4, read_u64(&ptr[24..32]));
+            if limit >> 5 > 0 {
+                for _i in 0..limit >> 5 {
+                    acc1 = xxh64_round(acc1, *(p.as_ptr() as *const u64));
+                    acc2 = xxh64_round(acc2, *(p[8..].as_ptr() as *const u64));
+                    acc3 = xxh64_round(acc3, *(p[16..].as_ptr() as *const u64));
+                    acc4 = xxh64_round(acc4, *(p[24..].as_ptr() as *const u64));
 
-                ptr = &ptr[32..];
+                    p = &p[32..];
+                }
             }
+
+            h64 = acc1
+                .rotate_left(1)
+                .wrapping_add(acc2.rotate_left(7))
+                .wrapping_add(acc3.rotate_left(12))
+                .wrapping_add(acc4.rotate_left(18));
+
+            h64 = xxh64_merge_round(h64, acc1);
+            h64 = xxh64_merge_round(h64, acc2);
+            h64 = xxh64_merge_round(h64, acc3);
+            h64 = xxh64_merge_round(h64, acc4);
+        } else {
+            h64 = seed.wrapping_add(PRIME64_5);
         }
-
-        h64 = acc1
-            .rotate_left(1)
-            .wrapping_add(acc2.rotate_left(7))
-            .wrapping_add(acc3.rotate_left(12))
-            .wrapping_add(acc4.rotate_left(18));
-
-        h64 = xxh64_merge_round(h64, acc1);
-        h64 = xxh64_merge_round(h64, acc2);
-        h64 = xxh64_merge_round(h64, acc3);
-        h64 = xxh64_merge_round(h64, acc4);
-    } else {
-        h64 = seed.wrapping_add(PRIME64_5);
     }
 
     // add len to hash
     h64 = h64.wrapping_add(n as u64);
 
     // finalize
-    xxh64_finalize(&ptr, h64)
+    xxh64_finalize(&p, h64)
 }
 
 fn xxh64_finalize(data: &[u8], mut h64: u64) -> u64 {
+    #[inline(always)]
+    fn read_u32(data: &[u8]) -> u32 {
+        unsafe { *(data.as_ptr() as *const u32) }
+    }
+
+    #[inline(always)]
+    fn read_u64(data: &[u8]) -> u64 {
+        unsafe { *(data.as_ptr() as *const u64) }
+    }
+
     #[inline(always)]
     fn process8(v: u64, mut h: u64) -> u64 {
         h ^= xxh64_round(0, v);

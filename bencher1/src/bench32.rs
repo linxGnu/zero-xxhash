@@ -1,10 +1,10 @@
 use std::hash::Hasher;
-
 use test;
+
 use twox_hash::XxHash32;
 use zero_xxhash::hash32::xxhash32;
 
-const degree: usize = 15;
+const degree: usize = 2;
 const size_0: usize = 0 * degree;
 const size_1: usize = 1 * degree;
 const size_4: usize = 4 * degree;

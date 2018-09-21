@@ -1,17 +1,11 @@
 [package]
-name = "comparison"
+name = "bencher2"
 version = "0.1.0"
 authors = ["linxGnu <linhduonggnu@gmail.com>"]
 
 [dependencies]
-fnv = "*"
-quickcheck = "*"
-rand = "*"
-xxhash2 = "*"
+criterion = "*"
 twox-hash = "*"
 
 [dependencies.zero-xxhash]
 path = ".."
-
-[features]
-bench = []
